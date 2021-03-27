@@ -1,5 +1,6 @@
 export * from './godot-bridge-messages';
 export * from './godot-bridge';
+export * from './godot-bridge-setup';
 
 declare global {
   interface Window {
@@ -20,7 +21,7 @@ declare global {
      * @default true
      */
     unloadAfterInit: boolean;
-  
+
     /**
      * The HTML DOM Canvas object to use.
      *
@@ -29,21 +30,21 @@ declare global {
      * @default null
      */
     canvas: HTMLCanvasElement | null;
-  
+
     /**
      * The name of the WASM file without the extension. (Set by Godot Editor export process).
      *
      * @default ""
      */
     executable: string;
-  
+
     /**
      * An alternative name for the game pck to load. The executable name is used otherwise.
      *
      * @default null
      */
     mainPack: string;
-  
+
     /**
      * Specify a language code to select the proper localization for the game.
      *
@@ -51,7 +52,7 @@ declare global {
      * @see [Complete list of supported locales.](https://docs.godotengine.org/en/stable/tutorials/i18n/locales.html#doc-locales)
      */
     locale: string | null;
-  
+
     /**
      * 0. means Godot won't do any resizing. This is useful if you want to control the canvas size from javascript code in your template.
      * 1. means Godot will resize the canvas on start, and when changing window size via engine functions.
@@ -60,7 +61,7 @@ declare global {
      * @default 2
      */
     canvasResizePolicy: 0 | 1 | 2;
-  
+
     /**
      * The arguments to be passed as command line arguments on startup.
      *
@@ -70,7 +71,7 @@ declare global {
      * @see [Command line tutorial](https://docs.godotengine.org/en/stable/getting_started/editor/command_line_tutorial.html#doc-command-line-tutorial)
      */
     args: string[];
-  
+
     /**
      * A callback function for handling Godot's `OS.execute` calls.
      *
@@ -80,7 +81,7 @@ declare global {
      * @param args The arguments of the "command" to execute.
      */
     onExecute(path: string, args: string[]): void;
-  
+
     /**
      * A callback function for being notified when the Godot instance quits.
      *
@@ -89,7 +90,7 @@ declare global {
      * @param status_code The status code returned by Godot on exit.
      */
     onExit(status_code: number): void;
-  
+
     /**
      * A callback function for displaying download progress.
      *
@@ -105,14 +106,14 @@ declare global {
      * @param total The total amount of bytes to be downloaded.
      */
     onProgress(current: number, total: number): void;
-  
+
     /**
      * A callback function for handling the standard output stream. This method should usually only be used in debug pages.
      *
      * @default console.log
      */
     onPrint(...args: (number | string | boolean)[]): void;
-  
+
     /**
      * A callback function for handling the standard error stream. This method should usually only be used in debug pages.
      *
@@ -120,7 +121,7 @@ declare global {
      */
     onPrintError(...args: (number | string | boolean)[]): void;
   }
-  
+
   /**
    * Projects exported for the Web expose the :js:class:`Engine` class to the JavaScript environment, that allows
    * fine control over the engine's start-up process.
@@ -136,7 +137,7 @@ declare global {
      * @returns A Promise that resolves once the engine is loaded.
      */
     static load(basePath: string): Promise<void>;
-  
+
     /**
      * Unload the engine to free memory.
      *
@@ -145,7 +146,7 @@ declare global {
      * @see [See `unloadAfterInit`](https://docs.godotengine.org/en/stable/tutorials/platform/html5_shell_classref.html#unloadAfterInit).
      */
     static unload(): void;
-  
+
     /**
      * Check whether WebGL is available. Optionally, specify a particular version of WebGL to check for.
      *
@@ -153,14 +154,14 @@ declare global {
      * @returns If the given major version of WebGL is available.
      */
     static isWebGLAvailable(majorVersion?: number): boolean;
-  
+
     /**
      * Create a new Engine instance with the given configuration.
      *
      * @param initConfig The initial config for this instance.
      */
     constructor(initConfig: Partial<EngineConfig>);
-  
+
     /**
      * Initialize the engine instance. Optionally, pass the base path to the engine to load it, if it hasn't been loaded yet.
      *
@@ -169,7 +170,7 @@ declare global {
      * @returns A Promise that resolves once the engine is loaded and initialized.
      */
     init(basePath?: string): Promise<void>;
-  
+
     /**
      * Load a file so it is available in the instance's file system once it runs. Must be called before starting the instance.
      *
@@ -182,7 +183,7 @@ declare global {
     preloadFile(file: string): Promise<void>;
     preloadFile(file: ArrayBuffer, path: string): Promise<void>;
     preloadFile(file: string | ArrayBuffer, path?: string): Promise<void>;
-  
+
     /**
      * Start the engine instance using the given override configuration (if any). startGame can be used in typical cases instead.
      *
@@ -194,7 +195,7 @@ declare global {
      * @returns Promise that resolves once the engine started.
      */
     start(override?: Partial<EngineConfig>): Promise<void>;
-  
+
     /**
      * Start the game instance using the given configuration override (if any).
      *
@@ -208,7 +209,7 @@ declare global {
      * @returns Promise that resolves once the game started.
      */
     startGame(override?: Partial<EngineConfig>): Promise<void>;
-  
+
     /**
      * Create a file at the specified ``path`` with the passed as ``buffer`` in the instance's file system.
      *
@@ -216,7 +217,7 @@ declare global {
      * @param buffer The content of the file.
      */
     copyToFS(path: string, buffer: ArrayBuffer): void;
-  
+
     /**
      * Request that the current instance quit.
      *
@@ -225,5 +226,4 @@ declare global {
      */
     requestQuit(): void;
   }
-  
 }

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2-alpha",
+  "version": "0.0.4-alpha",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -65,6 +65,7 @@
   "dependencies": {
     "autobind-decorator": "^2.4.0",
     "eventemitter3": "^4.0.7",
+    "js-base64": "^3.6.0",
     "uid": "^2.0.0"
   }
 }
