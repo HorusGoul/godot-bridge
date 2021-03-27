@@ -15,41 +15,94 @@ export interface RPCOptions {
 
 export const RPC_DEFAULT_TIMEOUT_MS = 10000;
 
-interface CreateGodotBridgeOptions {
-  name?: string;
-  debug?: boolean;
-}
-
 export interface GodotBridgeEvents {
   message: (message: GodotBridgeMessage) => void;
 }
 
 interface GodotBridgeOptions {
-  peer: RTCPeerConnection;
-  dataChannel: RTCDataChannel;
+  name: string;
 }
 
 @boundClass
 export class GodotBridge extends EventEmitter<GodotBridgeEvents> {
-  public internal: {
+  public internal!: {
     peer: RTCPeerConnection;
     dataChannel: RTCDataChannel;
   };
 
-  constructor({ peer, dataChannel }: GodotBridgeOptions) {
+  public name: string;
+
+  private log: ReturnType<typeof createLogger>;
+  private error: ReturnType<typeof createLogger>;
+
+  constructor({ name }: GodotBridgeOptions) {
     super();
 
-    this.internal = {
-      peer,
-      dataChannel,
-    };
+    this.name = name;
+    this.log = createLogger(`ℹ️ [${name}]`);
+    this.error = createLogger(`❌ [${name}]`);
   }
 
-  setup() {
-    this.internal.dataChannel.addEventListener('message', this.onMessage);
+  async setup() {
+    try {
+      const peer = new RTCPeerConnection();
+      const dataChannel = peer.createDataChannel(this.name, {
+        negotiated: true,
+        id: 1,
+      });
+
+      dataChannel.addEventListener('open', () => {
+        this.log('DataChannel open');
+      });
+
+      dataChannel.addEventListener('close', () => {
+        this.log('DataChannel closed');
+      });
+
+      const offer = await peer.createOffer();
+      peer.setLocalDescription(offer);
+
+      setOfferGlobals(offer, (type, sdp) =>
+        peer.setRemoteDescription({
+          type,
+          sdp,
+        })
+      );
+
+      const iceCandidates = await listenForIceCandidates(peer);
+
+      if (!iceCandidates.length) {
+        throw new Error(`No ICE candidates found.`);
+      }
+
+      setIceCandidateGlobals(
+        iceCandidates[0],
+        (candidate, sdpMid, sdpMLineIndex) => {
+          peer.addIceCandidate(
+            new RTCIceCandidate({
+              candidate,
+              sdpMid,
+              sdpMLineIndex,
+            })
+          );
+        }
+      );
+
+      this.internal = {
+        dataChannel,
+        peer,
+      };
+
+      this.internal.dataChannel.addEventListener('message', this.onMessage);
+    } catch (e) {
+      this.error(e.message);
+      throw new Error(`Couldn't connect with Godot. ${e.message}`);
+    }
   }
 
   teardown() {
+    this.internal.peer.close();
+    this.internal.dataChannel.close();
     this.internal.dataChannel.removeEventListener('message', this.onMessage);
   }
 
@@ -76,14 +129,14 @@ export class GodotBridge extends EventEmitter<GodotBridgeEvents> {
 
   waitForMessageOfType(type: GodotBridgeMessageType, options?: RPCOptions) {
     return this.waitForMessage(
-      incomingMessage => incomingMessage.type === type,
+      (incomingMessage) => incomingMessage.type === type,
       options
     );
   }
 
   waitForReply(message: GodotBridgeMessage, options?: RPCOptions) {
     return this.waitForMessage(
-      incomingMessage => incomingMessage.replyTo === message.id,
+      (incomingMessage) => incomingMessage.replyTo === message.id,
       options
     );
   }
@@ -124,66 +177,6 @@ export class GodotBridge extends EventEmitter<GodotBridgeEvents> {
   }
 }
 
-export async function createGodotBridge({
-  name = 'sendChannel',
-}: CreateGodotBridgeOptions = {}) {
-  const log = createLogger(`ℹ️ [${name}]`);
-  const error = createLogger(`❌ [${name}]`);
-
-  try {
-    const peer = new RTCPeerConnection();
-    const dataChannel = peer.createDataChannel(name, {
-      negotiated: true,
-      id: 1,
-    });
-
-    dataChannel.addEventListener('open', () => {
-      log('DataChannel open');
-    });
-
-    dataChannel.addEventListener('close', () => {
-      log('DataChannel closed');
-    });
-
-    const offer = await peer.createOffer();
-    peer.setLocalDescription(offer);
-
-    setOfferGlobals(offer, (type, sdp) =>
-      peer.setRemoteDescription({
-        type,
-        sdp,
-      })
-    );
-
-    const iceCandidates = await listenForIceCandidates(peer);
-
-    if (!iceCandidates.length) {
-      throw new Error(`No ICE candidates found.`);
-    }
-
-    setIceCandidateGlobals(
-      iceCandidates[0],
-      (candidate, sdpMid, sdpMLineIndex) => {
-        peer.addIceCandidate(
-          new RTCIceCandidate({
-            candidate,
-            sdpMid,
-            sdpMLineIndex,
-          })
-        );
-      }
-    );
-
-    return new GodotBridge({
-      peer,
-      dataChannel,
-    });
-  } catch (e) {
-    error(e.message);
-    throw new Error(`Couldn't connect with Godot. ${e.message}`);
-  }
-}
-
 function setOfferGlobals(
   offer: RTCSessionDescriptionInit,
   setRemoteDescriptionCallback: typeof window['setWebrtcGameSdp']
@@ -196,7 +189,7 @@ function listenForIceCandidates(
   peer: RTCPeerConnection,
   time = 100
 ): Promise<RTCIceCandidate[]> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const candidates: RTCIceCandidate[] = [];
 
     peer.addEventListener('icecandidate', onIceCandidate);
