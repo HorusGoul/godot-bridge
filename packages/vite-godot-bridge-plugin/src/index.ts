@@ -1,5 +1,4 @@
 import type { Plugin, ViteDevServer } from 'vite';
-import type { GodotBridge } from 'godot-bridge';
 
 export default function godotBridgePlugin(): Plugin {
   let server: ViteDevServer;
@@ -26,27 +25,4 @@ export default function godotBridgePlugin(): Plugin {
       });
     },
   };
-}
-
-export function configureGodotBridgeViteClient({
-  bridge,
-  engine,
-}: {
-  bridge: GodotBridge;
-  engine: Engine;
-}): void {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  if (import.meta.hot) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    import.meta.hot?.on('godot-update', async () => {
-      engine.requestQuit();
-
-      bridge.teardown();
-      await bridge.setup();
-
-      await engine.startGame();
-    });
-  }
 }
