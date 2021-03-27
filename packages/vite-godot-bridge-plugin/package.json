@@ -1,6 +1,7 @@
 {
   "name": "vite-godot-bridge-plugin",
-  "version": "0.0.3-alpha",
+  "version": "0.0.4-alpha",
+  "main": "dist/cjs/index.js",
   "module": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": "Horus Lugo",
@@ -10,7 +11,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc --outDir ./dist/cjs --module commonjs --target ES2018",
     "prepare": "yarn build",
     "typecheck": "tsc --noEmit",
     "lint:base": "eslint --ext .js,.json,.ts",

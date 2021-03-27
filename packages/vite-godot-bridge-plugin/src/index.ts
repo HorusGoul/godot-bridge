@@ -34,8 +34,12 @@ export function configureGodotBridgeViteClient({
 }: {
   bridge: GodotBridge;
   engine: Engine;
-}) {
+}): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   if (import.meta.hot) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     import.meta.hot?.on('godot-update', async () => {
       engine.requestQuit();
 
