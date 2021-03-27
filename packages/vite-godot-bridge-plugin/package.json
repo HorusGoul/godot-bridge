@@ -1,0 +1,50 @@
+{
+  "name": "vite-godot-bridge-plugin",
+  "version": "0.0.2-alpha",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "author": "Horus Lugo",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "typecheck": "tsc --noEmit",
+    "lint:base": "eslint --ext .js,.json,.ts",
+    "lint": "yarn lint:base src"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,js,json}": [
+      "yarn lint:base --fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn typecheck && lint-staged"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.16",
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-prettier": "^3.3.0",
+    "husky": "^4.3.6",
+    "lint-staged": "^10.5.3",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.3",
+    "vite": "^2.1.3",
+    "godot-bridge": "^0.0.2-alpha"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "peerDependencies": {
+    "godot-bridge": "^0.0.2-alpha",
+    "vite": "^2"
+  }
+}
